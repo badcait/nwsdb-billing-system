@@ -1,0 +1,36 @@
+# Visual Studio and generated output
+**/bin/
+**/obj/
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+*.log
+
+# Local credentials and settings (keep example templates)
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+**/*password*.txt
+**/*Password*.txt
+**/*.pubxml
+**/*.pubxml.user
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Local data and submission archives
+*.mdf
+*.ldf
+*.bak
+*.bacpac
+*.zip
+*.7z
+Thumbs.db
+.DS_Store

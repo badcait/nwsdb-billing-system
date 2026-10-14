@@ -1,0 +1,120 @@
+@page
+@model website.Pages.DashboardModel
+@{
+    ViewData["Title"] = "My dashboard";
+}
+<div class="heading">
+    <div>
+        <p class="eyebrow">CUSTOMER DASHBOARD</p>
+        <h1>Your water, at a glance.</h1>
+    </div>
+    <span class="pill">Latest recorded information</span>
+</div>
+@if (Model.Error != null)
+{
+    <p class="alert">@Model.Error</p>
+}
+<div class="account-links">
+    @foreach (var a in Model.Accounts)
+    {
+        <a class="pill" asp-route-accountId="@a.AccountId">@a.AccountNumber</a>
+    }
+</div>
+@if (Model.Selected is { } selected)
+{
+    <div class="grid three">
+        <section class="card">
+            <p class="muted">Outstanding balance</p>
+            <h2 class="metric">LKR @selected.OutstandingAmount.ToString("N2")</h2>
+            <span>@selected.AccountNumber</span>
+        </section>
+        <section class="card accent">
+            <p>Latest consumption</p>
+            <h2 class="metric">
+                @(selected.LatestConsumption?.ToString("N2") ?? "—")
+                <small>units</small>
+            </h2>
+            <span>Between the latest two readings</span>
+        </section>
+        <section class="card">
+            <p class="muted">Latest meter reading</p>
+            <h2 class="metric">@(selected.LatestMeterValue?.ToString("N2") ?? "—")</h2>
+            <span>@(selected.LatestReadingDate?.ToString("dd MMM yyyy") ?? "No readings yet")</span>
+        </section>
+    </div>
+    @if (selected.IsProcessing)
+    {
+        <p class="notice">A payment is being checked. The outstanding balance will change after completion.</p>
+    }
+    <section class="card">
+        <h2>Your bills</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Period end</th>
+                        <th>Due date</th>
+                        <th>Units</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model.Bills)
+                    {
+                        <tr>
+                            <td>@b.PeriodEnd.ToString("dd MMM yyyy")</td>
+                            <td>@b.DueDate.ToString("dd MMM yyyy")</td>
+                            <td>@b.Units</td>
+                            <td>LKR @b.Amount.ToString("N2")</td>
+                            <td>
+                                <span class="pill">@(b.OutstandingAmount == 0 ? "Paid" : b.IsProcessing ? "Processing" : "Unpaid")</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="muted">Pay unpaid bills through an authorised collection partner.</p>
+    </section>
+    <div class="grid two">
+        <section class="card">
+            <h2>Recorded usage</h2>
+            <table>
+                <tr>
+                    <th>Date</th>
+                    <th>Meter value</th>
+                    <th>Consumption</th>
+                </tr>
+                @foreach (var r in Model.Readings.Reverse())
+                {
+                    <tr>
+                        <td>@r.ReadingDate.ToString("dd MMM yyyy")</td>
+                        <td>@r.MeterValue</td>
+                        <td>@(r.Consumption?.ToString("N2") ?? "Baseline")</td>
+                    </tr>
+                }
+            </table>
+        </section>
+        <section class="card">
+            <h2>Payment receipts</h2>
+            @foreach (var r in Model.Receipts.Where(x => x.AccountNumber == selected.AccountNumber))
+            {
+                <details>
+                    <summary>LKR @r.Amount.ToString("N2") · @r.PaidAt.ToString("dd MMM yyyy")</summary>
+                    <p>Receipt: @r.ReceiptNumber</p>
+                    <p>Bank reference: @r.BankReference</p>
+                    <p>Account: @r.AccountNumber · Bill: @r.BillId</p>
+                </details>
+            }
+            @if (!Model.Receipts.Any(x => x.AccountNumber == selected.AccountNumber))
+            {
+                <p class="muted">No completed payments yet.</p>
+            }
+        </section>
+    </div>
+}
+else if (Model.Error == null)
+{
+    <section class="card">No water accounts are linked to your login.</section>
+}

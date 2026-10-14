@@ -1,0 +1,268 @@
+@page
+@model website.Pages.StaffModel
+@{
+    ViewData["Title"] = "Staff workspace";
+}
+<p class="eyebrow">STAFF WORKSPACE</p>
+<h1>Accounts and collections.</h1>
+@if (Model.Message != null)
+{
+    <p class="notice">@Model.Message</p>
+}
+<section class="card">
+    <h2>Search customers and accounts</h2>
+    <form method="get" class="inline">
+        <label>
+            Customer name
+            <input name="CustomerSearch" value="@Model.CustomerSearch" maxlength="200" />
+        </label>
+        <label>
+            Account number or address
+            <input name="AccountSearch" value="@Model.AccountSearch" maxlength="200" />
+        </label>
+        <button>Search</button>
+        <a asp-page="/Staff">Clear</a>
+    </form>
+    <p class="muted">Page @Model.ResultPage · Up to 50 results per list. Remove is available only for unused records.</p>
+    @if (Model.ResultPage > 1)
+    {
+        <a asp-page="/Staff" asp-route-CustomerSearch="@Model.CustomerSearch" asp-route-AccountSearch="@Model.AccountSearch" asp-route-ResultPage="@(Model.ResultPage - 1)">Previous page</a>
+    }
+    @if (Model.Customers.Length == 50 || Model.Accounts.Length == 50)
+    {
+        <a asp-page="/Staff" asp-route-CustomerSearch="@Model.CustomerSearch" asp-route-AccountSearch="@Model.AccountSearch" asp-route-ResultPage="@(Model.ResultPage + 1)">Next page</a>
+    }
+    <div class="grid two">
+        <div>
+            <h3>Customers</h3>
+            @if (Model.Customers.Length == 0)
+            {
+                <p>No matching customers.</p>
+            }
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+                @foreach (var c in Model.Customers)
+                {
+                    <tr>
+                        <td>@c.CustomerId</td>
+                        <td>@c.FullName</td>
+                        <td>
+                            <form method="post" asp-page-handler="RemoveCustomer" onsubmit="return confirm('Remove this customer permanently? Linked customers cannot be removed.');">
+                                <input type="hidden" name="customerId" value="@c.CustomerId" />
+                                <input type="hidden" name="CustomerSearch" value="@Model.CustomerSearch" />
+                                <input type="hidden" name="AccountSearch" value="@Model.AccountSearch" />
+                                <input type="hidden" name="ResultPage" value="@Model.ResultPage" />
+                                <button>Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div>
+            <h3>Water accounts</h3>
+            @if (Model.Accounts.Length == 0)
+            {
+                <p>No matching accounts.</p>
+            }
+            <table>
+                <tr>
+                    <th>Account</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                </tr>
+                @foreach (var a in Model.Accounts)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="/Staff" asp-route-accountId="@a.AccountId" asp-route-CustomerSearch="@Model.CustomerSearch" asp-route-AccountSearch="@Model.AccountSearch" asp-route-ResultPage="@Model.ResultPage">@a.AccountNumber</a>
+                        </td>
+                        <td>@a.ServiceAddress</td>
+                        <td>
+                            <form method="post" asp-page-handler="RemoveAccount" onsubmit="return confirm('Remove this water account permanently? Accounts with readings or bills cannot be removed.');">
+                                <input type="hidden" name="accountId" value="@a.AccountId" />
+                                <input type="hidden" name="CustomerSearch" value="@Model.CustomerSearch" />
+                                <input type="hidden" name="AccountSearch" value="@Model.AccountSearch" />
+                                <input type="hidden" name="ResultPage" value="@Model.ResultPage" />
+                                <button>Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</section>
+<div class="grid two">
+    <section class="card">
+        <h2>Create customer</h2>
+        <form method="post" asp-page-handler="Customer">
+            <label>
+                Full name
+                <input name="fullName" required maxlength="200"/>
+            </label>
+            <label>
+                Email
+                <input name="email" type="email" required/>
+            </label>
+            <label>
+                Phone
+                <input name="phone" required/>
+            </label>
+            <button>Create customer</button>
+        </form>
+    </section>
+    <section class="card">
+        <h2>Create water account</h2>
+        <form method="post" asp-page-handler="Account">
+            <label>
+                Customer
+                <select name="customerId">
+                    @foreach (var c in Model.Customers)
+                    {
+                        <option value="@c.CustomerId">@c.FullName (#@c.CustomerId)</option>
+                    }
+                </select>
+            </label>
+            <label>
+                Account number
+                <input name="accountNumber" required/>
+            </label>
+            <label>
+                Service address
+                <input name="serviceAddress" required/>
+            </label>
+            <button>Create account</button>
+        </form>
+    </section>
+</div>
+<section class="card">
+    <h2>Manage account</h2>
+    <form method="get" class="inline">
+        <select name="accountId">
+            @foreach (var a in Model.Accounts)
+            {
+                <option value="@a.AccountId" selected="@(a.AccountId == Model.AccountId)">@a.AccountNumber — @a.ServiceAddress</option>
+            }
+        </select>
+        <button>Open account</button>
+    </form>
+</section>
+@if (Model.AccountId > 0)
+{
+    <div class="grid two">
+        <section class="card">
+            <h2>Record meter reading</h2>
+            <form method="post" asp-page-handler="Reading">
+                <input type="hidden" name="accountId" value="@Model.AccountId"/>
+                <label>
+                    Reading date
+                    <input name="readingDate" type="date" required/>
+                </label>
+                <label>
+                    Cumulative meter value
+                    <input name="meterValue" type="number" min="0" step="0.01" required/>
+                </label>
+                <button>Save reading</button>
+            </form>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Value</th>
+                </tr>
+                @foreach (var r in Model.Readings)
+                {
+                    <tr>
+                        <td>@r.ReadingId</td>
+                        <td>@r.ReadingDate.ToString("dd MMM yyyy")</td>
+                        <td>@r.MeterValue</td>
+                    </tr>
+                }
+            </table>
+        </section>
+        <section class="card">
+            <h2>Issue bill</h2>
+            <p class="muted">Select consecutive readings.</p>
+            <form method="post" asp-page-handler="Bill">
+                <input type="hidden" name="accountId" value="@Model.AccountId"/>
+                <label>
+                    Start reading
+                    <select name="startReadingId">
+                        @foreach (var r in Model.Readings)
+                        {
+                            <option value="@r.ReadingId">@r.ReadingDate.ToString("dd MMM yyyy") — @r.MeterValue</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    End reading
+                    <select name="endReadingId">
+                        @foreach (var r in Model.Readings)
+                        {
+                            <option value="@r.ReadingId">@r.ReadingDate.ToString("dd MMM yyyy") — @r.MeterValue</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    Due date
+                    <input type="date" name="dueDate" required/>
+                </label>
+                <button>Issue bill</button>
+            </form>
+            <table>
+                <tr>
+                    <th>Bill</th>
+                    <th>Amount</th>
+                    <th>Outstanding</th>
+                </tr>
+                @foreach (var b in Model.Bills)
+                {
+                    <tr>
+                        <td>@b.BillId</td>
+                        <td>@b.Amount.ToString("N2")</td>
+                        <td>@b.OutstandingAmount.ToString("N2")</td>
+                    </tr>
+                }
+            </table>
+        </section>
+    </div>
+}
+<section class="card">
+    <h2>Recent payment attempts</h2>
+    <div class="table-wrap">
+        <table>
+            <tr>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Receipt / action</th>
+            </tr>
+            @foreach (var p in Model.Payments)
+            {
+                <tr>
+                    <td>@p.AccountNumber</td>
+                    <td>@p.Amount.ToString("N2")</td>
+                    <td>@p.Status</td>
+                    <td>
+                        @if (p.Status.ToString() == "Pending")
+                        {
+                            <form method="post" asp-page-handler="Reconcile">
+                                <input type="hidden" name="id" value="@p.AttemptId"/>
+                                <button>Recheck</button>
+                            </form>
+                        }
+                        else
+                        {
+                            @p.Receipt?.ReceiptNumber
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</section>

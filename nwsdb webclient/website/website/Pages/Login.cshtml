@@ -1,0 +1,35 @@
+@page
+@model website.Pages.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<div class="login">
+    <div>
+        <p class="eyebrow">YOUR WATER ACCOUNT</p>
+        <h1>
+            A clearer view
+            <br/>
+            of your water.
+        </h1>
+        <p class="muted">View your latest recorded usage, bills and payment receipts in one place.</p>
+    </div>
+    <section class="card">
+        <h2>Welcome back</h2>
+        <p class="muted">Sign in to your customer or staff account.</p>
+        @if (Model.Error != null)
+        {
+            <p class="alert">@Model.Error</p>
+        }
+        <form method="post">
+            <label>
+                Username
+                <input asp-for="Username" autocomplete="username" required/>
+            </label>
+            <label>
+                Password
+                <input asp-for="Password" type="password" autocomplete="current-password" required/>
+            </label>
+            <button>Sign in</button>
+        </form>
+    </section>
+</div>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>@ViewData["Title"] · NWSDB</title>
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    </head>
+    <body>
+        <div class="shell">
+            <header>
+                <a class="brand" asp-page="/Index">
+                    <span class="mark">N</span>
+                    NWSDB
+                </a>
+                <nav>
+                    @if (Context.Session.GetString("Role") == "Customer")
+                    {
+                        <a asp-page="/Dashboard">My dashboard</a>
+                    }
+                    @if (Context.Session.GetString("Role") == "Staff")
+                    {
+                        <a asp-page="/Staff">Staff workspace</a>
+                    }
+                </nav>
+                @if (Context.Session.GetString("Token") != null)
+                {
+                    <form method="post" asp-page="/Login" asp-page-handler="Logout">
+                        <button class="quiet">Sign out</button>
+                    </form>
+                }
+            </header>
+            <main>@RenderBody()</main>
+        </div>
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+</html>

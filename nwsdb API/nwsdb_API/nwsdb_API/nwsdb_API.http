@@ -1,0 +1,23 @@
+@baseUrl = https://localhost:7180
+@token = PASTE_ACCESS_TOKEN_HERE
+
+### Sign in (after database setup and demo seed)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{"username":"customer","password":"Learning123!"}
+
+### Customer accounts
+GET {{baseUrl}}/api/me/accounts
+Authorization: Bearer {{token}}
+
+### Partner bill lookup (sign in as cashier first)
+GET {{baseUrl}}/api/partner/accounts/W-1001/bills
+Authorization: Bearer {{token}}
+
+### Submit one full bill payment (use a new GUID only for new work)
+POST {{baseUrl}}/api/payments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"billId":1,"amount":700,"clientReference":"32ad3524-1285-4a0c-9f3b-79e69d267751","mockPaymentToken":"demo-approve"}

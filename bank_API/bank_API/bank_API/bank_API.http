@@ -1,0 +1,13 @@
+@baseUrl = https://localhost:7182
+@serviceKey = coursework-local-bank-service-key-2026
+
+### Same ID and payload return the original result
+POST {{baseUrl}}/api/bank/payments
+X-Service-Key: {{serviceKey}}
+Content-Type: application/json
+
+{"attemptId":"302fdc86-39d8-499f-82ba-ab3240b37780","amount":700,"currency":"LKR","mockPaymentToken":"demo-approve"}
+
+### Read the saved outcome
+GET {{baseUrl}}/api/bank/payments/302fdc86-39d8-499f-82ba-ab3240b37780
+X-Service-Key: {{serviceKey}}
